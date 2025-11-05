@@ -1,48 +1,37 @@
 package api
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-// ErrorResponse represents an API error response
-type ErrorResponse struct {
-	Error   string `json:"error"`
-	Code    string `json:"code,omitempty"`
-	Details string `json:"details,omitempty"`
+type GetLocationRequest struct {
+	ZipCode string `uri:"zip_code"`
 }
 
 func (s *Server) getLocation(ctx *gin.Context) {
-	zipcode := ctx.DefaultQuery("zipcode", "")
-
-	if zipcode == "" {
-		ctx.JSON(http.StatusBadRequest, errorResponse(
-			"zipcode parameter is required",
-			"MISSING_ZIPCODE",
-			"Please provide a zipcode query parameter",
-		))
+	var req GetLocationRequest
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
-	loc, err := s.service.GetLocation(zipcode)
+	fmt.Println(req)
+
+	location, err := s.store.GetLocation(req.ZipCode)
 	if err != nil {
-		if err.Error() == "invalid zipcode format: "+zipcode {
-			ctx.JSON(http.StatusBadRequest, errorResponse(
-				"Invalid zipcode format",
-				"INVALID_FORMAT",
-				"Zipcode must be exactly 5 digits",
-			))
-			return
-		}
-
-		ctx.JSON(http.StatusNotFound, errorResponse(
-			"Zipcode not found",
-			"NOT_FOUND",
-			"The provided zipcode does not exist in our database",
-		))
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, loc)
+	if location == nil {
+		err := errors.New("zip code not found")
+		ctx.JSON(http.StatusNotFound, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, location)
 }

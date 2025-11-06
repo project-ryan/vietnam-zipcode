@@ -1,8 +1,9 @@
 # vietnam-zipcode
-Takes `zipcode` as input, returns `province` and `ward`
+Takes `zipcode` as input and returns its corresponding `province` and `ward` 
+
+These data were obtained from this site: [Thu vien phap luat](https://thuvienphapluat.vn/chinh-sach-phap-luat-moi/vn/ho-tro-phap-luat/chinh-sach-moi/94242/tra-cuu-ma-buu-chinh-cua-cac-xa-phuong-34-tinh-thanh-sau-sap-nhap). 
 
 If you are using my code, pls consider leaving a star ⭐
-
 ```
 @GET /90469
 
